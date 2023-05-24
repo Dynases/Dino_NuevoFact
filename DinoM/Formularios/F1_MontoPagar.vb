@@ -22,7 +22,10 @@ Public Class F1_MontoPagar
     Public RazonSocial As String = ""
     Public TipoCambio As Double = 0
     Public tipoVenta As Integer = 1
-
+    Public tipoDoc As ComboBox
+    Public email As String = ""
+    Public IdNit As String = ""
+    Public CExcep As Integer
 
 
     Private Sub F1_MontoPagar_Load(sender As Object, e As EventArgs) Handles MyBase.Load
@@ -42,6 +45,15 @@ Public Class F1_MontoPagar
         tbNit.Text = Nit
         tbRazonSocial.Text = RazonSocial
 
+        chbTarjeta.Checked = False
+        tbNroTarjeta1.Text = ""
+        tbNroTarjeta2.Text = "00000000"
+        tbNroTarjeta3.Text = ""
+        lbNroTarjeta.Visible = False
+        tbNroTarjeta1.Visible = False
+        tbNroTarjeta2.Visible = False
+        tbNroTarjeta3.Visible = False
+        lbEjemplo.Visible = False
 
         'tbNit.Focus()
     End Sub
@@ -225,16 +237,22 @@ Public Class F1_MontoPagar
     End Sub
 
     Private Sub tbNit_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles tbNit.Validating
-        Dim nom1, nom2 As String
+        Dim nom1, nom2, correo, tipoDoc, id As String
         nom1 = ""
         nom2 = ""
+        correo = ""
+        tipoDoc = ""
+        id = ""
         If (tbNit.Text.Trim <> String.Empty) Then
-            L_Validar_Nit(tbNit.Text.Trim, nom1, nom2)
+            L_Validar_Nit(tbNit.Text.Trim, nom1, nom2, correo, tipoDoc, id)
             If nom1 = "" Then
                 tbRazonSocial.Focus()
+                IdNit = id
             Else
-                tbRazonSocial.Text = nom1 + nom2
-
+                tbRazonSocial.Text = nom1
+                TbEmail.Text = correo
+                CbTipoDoc.Value = tipoDoc
+                IdNit = id
             End If
         End If
     End Sub
@@ -293,8 +311,45 @@ Public Class F1_MontoPagar
     End Sub
 
     Private Sub btnContinuar_Click(sender As Object, e As EventArgs) Handles btnContinuar.Click
-        If tipoVenta = 1 Then
-            If (tbMontoTarej.Value + tbMontoQR.Value + (tbMontoDolar.Value * cbCambioDolar.Text) + tbMontoBs.Value >= TotalVenta) Then
+        Try
+            If tbNit.Text = String.Empty Or tbRazonSocial.Text = String.Empty Then
+                ToastNotification.Show(Me, "Debe Ingresar Nit y Razón Social obligatoriamente!!!", My.Resources.WARNING, 3500, eToastGlowColor.Red, eToastPosition.TopCenter)
+                Exit Sub
+            End If
+            If (CbTipoDoc.SelectedIndex < 0) Then
+                ToastNotification.Show(Me, "Por Favor Seleccione Tipo de Documento!!!", My.Resources.WARNING, 3500, eToastGlowColor.Red, eToastPosition.TopCenter)
+                CbTipoDoc.Focus()
+                Exit Sub
+            End If
+
+            If (chbTarjeta.Checked = True) Then
+
+                If tbNroTarjeta1.Text = String.Empty Or tbNroTarjeta1.Text = "0" Or tbNroTarjeta1.Text = "0000" Or tbNroTarjeta3.Text = String.Empty Or tbNroTarjeta3.Text = "0" Or tbNroTarjeta3.Text = "0000" Then
+                    Dim img As Bitmap = New Bitmap(My.Resources.mensaje, 50, 50)
+                    ToastNotification.Show(Me, "Debe colocar el Nro. de Tarjeta en los espacios correspondientes".ToUpper, img, 3000, eToastGlowColor.Red, eToastPosition.BottomCenter)
+                    tbNroTarjeta1.Focus()
+                    Exit Sub
+                End If
+            End If
+
+            If tipoVenta = 1 Then
+
+                If (tbMontoTarej.Value + tbMontoQR.Value + (tbMontoDolar.Value * cbCambioDolar.Text) + tbMontoBs.Value >= TotalVenta) Then
+                    Bandera = True
+                    TotalBs = tbMontoBs.Value
+                    TotalSus = tbMontoDolar.Value
+                    TotalTarjeta = tbMontoTarej.Value
+                    TotalQR = tbMontoQR.Value
+                    Nit = tbNit.Text
+                    RazonSocial = tbRazonSocial.Text
+                    TipoCambio = cbCambioDolar.Text
+                    Me.Close()
+
+                Else
+                    ToastNotification.Show(Me, "Debe Ingresar un Monto a Cobrar Valido igual o mayor A = " + Str(TotalVenta), My.Resources.WARNING, 4000, eToastGlowColor.Red, eToastPosition.TopCenter)
+                    tbMontoBs.Focus()
+                End If
+            Else
                 Bandera = True
                 TotalBs = tbMontoBs.Value
                 TotalSus = tbMontoDolar.Value
@@ -304,26 +359,21 @@ Public Class F1_MontoPagar
                 RazonSocial = tbRazonSocial.Text
                 TipoCambio = cbCambioDolar.Text
                 Me.Close()
-
-            Else
-                ToastNotification.Show(Me, "Debe Ingresar un Monto a Cobrar Valido igual o mayor A = " + Str(TotalVenta), My.Resources.WARNING, 4000, eToastGlowColor.Red, eToastPosition.TopCenter)
-                tbMontoBs.Focus()
             End If
-        Else
-            Bandera = True
-            TotalBs = tbMontoBs.Value
-            TotalSus = tbMontoDolar.Value
-            TotalTarjeta = tbMontoTarej.Value
-            TotalQR = tbMontoQR.Value
-            Nit = tbNit.Text
-            RazonSocial = tbRazonSocial.Text
-            TipoCambio = cbCambioDolar.Text
-            Me.Close()
-        End If
 
+        Catch ex As Exception
+            MostrarMensajeError(ex.Message)
+        End Try
+    End Sub
+    Private Sub MostrarMensajeError(mensaje As String)
+        ToastNotification.Show(Me,
+                               mensaje.ToUpper,
+                               My.Resources.WARNING,
+                               5000,
+                               eToastGlowColor.Red,
+                               eToastPosition.TopCenter)
 
     End Sub
-
     Private Sub BtnSalir_Click(sender As Object, e As EventArgs) Handles BtnSalir.Click
         TotalBs = 0
         TotalSus = 0

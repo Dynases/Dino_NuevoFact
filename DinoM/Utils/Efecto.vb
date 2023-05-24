@@ -2,6 +2,7 @@
 Imports System.ComponentModel
 Imports System.Text
 Imports DevComponents.DotNetBar
+Imports Janus.Windows.GridEX.EditControls
 Public Class Efecto
     Public _archivo As String
     Public band As Boolean = False
@@ -28,6 +29,12 @@ Public Class Efecto
     Public Cantidad As Double = 0
     Public Nit As String = ""
     Public RazonSocial As String = ""
+    Public Tdoc As New MultiColumnCombo
+    Public Email As String = ""
+    Public IdNit As String
+    Public nroTarjeta As String
+    Public CExc As Integer
+
     Public Conversion As Double = 0
     Public CantidadPrevia As Double = 0
 
@@ -93,6 +100,20 @@ Public Class Efecto
         frmAyuda.RazonSocial = RazonSocial
         frmAyuda.tipoVenta = TipoVenta
 
+        With frmAyuda.CbTipoDoc
+            .DropDownList.Columns.Clear()
+            .DropDownList.Columns.Add("codigoClasificador").Width = 70
+            .DropDownList.Columns("codigoClasificador").Caption = "COD"
+            .DropDownList.Columns.Add("descripcion").Width = 400
+            .DropDownList.Columns("descripcion").Caption = "DESCRIPCION"
+            .ValueMember = "codigoClasificador"
+            .DisplayMember = "descripcion"
+            .DataSource = Tdoc.DataSource
+            .Refresh()
+        End With
+
+        frmAyuda.TbEmail.Text = Email
+
         frmAyuda.ShowDialog()
         If frmAyuda.Bandera = True Then
 
@@ -104,6 +125,13 @@ Public Class Efecto
             RazonSocial = frmAyuda.RazonSocial
             TipoCambio = frmAyuda.TipoCambio
             TipoVenta = frmAyuda.tipoVenta
+            Tdoc.Value = frmAyuda.CbTipoDoc.Value
+            Email = frmAyuda.TbEmail.Text
+            IdNit = frmAyuda.IdNit
+            nroTarjeta = (frmAyuda.tbNroTarjeta1.Text & frmAyuda.tbNroTarjeta2.Text & frmAyuda.tbNroTarjeta3.Text)
+            CExc = frmAyuda.CExcep
+
+
             band = True
             Me.Close()
         Else

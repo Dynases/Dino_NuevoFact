@@ -23,6 +23,7 @@ Partial Class F0_VentasSupermercado
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
         Me.components = New System.ComponentModel.Container()
+        Dim CbTDoc_DesignTimeLayout As Janus.Windows.GridEX.GridEXLayout = New Janus.Windows.GridEX.GridEXLayout()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(F0_VentasSupermercado))
         Me.PanelImagen = New System.Windows.Forms.Panel()
         Me.PanelRight = New System.Windows.Forms.Panel()
@@ -43,6 +44,7 @@ Partial Class F0_VentasSupermercado
         Me.CmDetalle = New System.Windows.Forms.ContextMenuStrip(Me.components)
         Me.ModificarCantidadMenu = New System.Windows.Forms.ToolStripMenuItem()
         Me.EliminarProductoMenu = New System.Windows.Forms.ToolStripMenuItem()
+        Me.TimerImagenes = New System.Windows.Forms.Timer(Me.components)
         Me.PanelDatos = New System.Windows.Forms.Panel()
         Me.grdetalle = New Janus.Windows.GridEX.GridEX()
         Me.PanelButtom = New System.Windows.Forms.Panel()
@@ -52,6 +54,9 @@ Partial Class F0_VentasSupermercado
         Me.tbTotal = New DevComponents.Editors.DoubleInput()
         Me.Label2 = New System.Windows.Forms.Label()
         Me.Panel1 = New System.Windows.Forms.Panel()
+        Me.TbEmailS = New DevComponents.DotNetBar.Controls.TextBoxX()
+        Me.CbTDoc = New Janus.Windows.GridEX.EditControls.MultiColumnCombo()
+        Me.Label12 = New System.Windows.Forms.Label()
         Me.lbCredito = New System.Windows.Forms.Label()
         Me.tbFechaVenc = New DevComponents.Editors.DateTimeAdv.DateTimeInput()
         Me.Label11 = New System.Windows.Forms.Label()
@@ -72,8 +77,6 @@ Partial Class F0_VentasSupermercado
         Me.PanelTop = New System.Windows.Forms.Panel()
         Me.PictureBox2 = New System.Windows.Forms.PictureBox()
         Me.QrFactura = New Gma.QrCodeNet.Encoding.Windows.Forms.QrCodeImgControl()
-        Me.TimerImagenes = New System.Windows.Forms.Timer(Me.components)
-        Me.Label12 = New System.Windows.Forms.Label()
         Me.PanelImagen.SuspendLayout()
         Me.PanelRight.SuspendLayout()
         Me.PanelC.SuspendLayout()
@@ -93,6 +96,7 @@ Partial Class F0_VentasSupermercado
         CType(Me.tbDescuento, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.tbTotal, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.Panel1.SuspendLayout()
+        CType(Me.CbTDoc, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.tbFechaVenc, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.PanelTop.SuspendLayout()
         CType(Me.PictureBox2, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -383,6 +387,10 @@ Partial Class F0_VentasSupermercado
         Me.EliminarProductoMenu.Size = New System.Drawing.Size(190, 36)
         Me.EliminarProductoMenu.Text = "Eliminar Producto"
         '
+        'TimerImagenes
+        '
+        Me.TimerImagenes.Interval = 10000
+        '
         'PanelDatos
         '
         Me.PanelDatos.BackgroundImage = Global.DinoM.My.Resources.Resources.fondo1
@@ -517,6 +525,8 @@ Partial Class F0_VentasSupermercado
         '
         Me.Panel1.BackColor = System.Drawing.Color.Azure
         Me.Panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.Panel1.Controls.Add(Me.TbEmailS)
+        Me.Panel1.Controls.Add(Me.CbTDoc)
         Me.Panel1.Controls.Add(Me.Label12)
         Me.Panel1.Controls.Add(Me.lbCredito)
         Me.Panel1.Controls.Add(Me.tbFechaVenc)
@@ -541,6 +551,52 @@ Partial Class F0_VentasSupermercado
         Me.Panel1.Name = "Panel1"
         Me.Panel1.Size = New System.Drawing.Size(619, 73)
         Me.Panel1.TabIndex = 9
+        '
+        'TbEmailS
+        '
+        Me.TbEmailS.BackColor = System.Drawing.Color.White
+        '
+        '
+        '
+        Me.TbEmailS.Border.Class = "TextBoxBorder"
+        Me.TbEmailS.Border.CornerType = DevComponents.DotNetBar.eCornerType.Square
+        Me.TbEmailS.Font = New System.Drawing.Font("Georgia", 5.0!, System.Drawing.FontStyle.Bold)
+        Me.TbEmailS.ForeColor = System.Drawing.Color.FromArgb(CType(CType(45, Byte), Integer), CType(CType(59, Byte), Integer), CType(CType(66, Byte), Integer))
+        Me.TbEmailS.Location = New System.Drawing.Point(260, 49)
+        Me.TbEmailS.Name = "TbEmailS"
+        Me.TbEmailS.PreventEnterBeep = True
+        Me.TbEmailS.Size = New System.Drawing.Size(37, 15)
+        Me.TbEmailS.TabIndex = 421
+        Me.TbEmailS.Visible = False
+        '
+        'CbTDoc
+        '
+        Me.CbTDoc.BorderStyle = Janus.Windows.GridEX.BorderStyle.Flat
+        Me.CbTDoc.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper
+        CbTDoc_DesignTimeLayout.LayoutString = resources.GetString("CbTDoc_DesignTimeLayout.LayoutString")
+        Me.CbTDoc.DesignTimeLayout = CbTDoc_DesignTimeLayout
+        Me.CbTDoc.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.CbTDoc.Location = New System.Drawing.Point(228, 48)
+        Me.CbTDoc.Name = "CbTDoc"
+        Me.CbTDoc.Office2007ColorScheme = Janus.Windows.GridEX.Office2007ColorScheme.Custom
+        Me.CbTDoc.Office2007CustomColor = System.Drawing.Color.DodgerBlue
+        Me.CbTDoc.SelectedIndex = -1
+        Me.CbTDoc.SelectedItem = Nothing
+        Me.CbTDoc.Size = New System.Drawing.Size(26, 18)
+        Me.CbTDoc.TabIndex = 420
+        Me.CbTDoc.Visible = False
+        Me.CbTDoc.VisualStyle = Janus.Windows.GridEX.VisualStyle.Office2007
+        '
+        'Label12
+        '
+        Me.Label12.AutoSize = True
+        Me.Label12.Font = New System.Drawing.Font("Calibri", 9.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Label12.Location = New System.Drawing.Point(449, 51)
+        Me.Label12.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
+        Me.Label12.Name = "Label12"
+        Me.Label12.Size = New System.Drawing.Size(142, 14)
+        Me.Label12.TabIndex = 361
+        Me.Label12.Text = "Tecla Ctrl + A: Elegir Cliente"
         '
         'lbCredito
         '
@@ -822,21 +878,6 @@ Partial Class F0_VentasSupermercado
         Me.QrFactura.Text = "QrCodeImgControl1"
         Me.QrFactura.Visible = False
         '
-        'TimerImagenes
-        '
-        Me.TimerImagenes.Interval = 10000
-        '
-        'Label12
-        '
-        Me.Label12.AutoSize = True
-        Me.Label12.Font = New System.Drawing.Font("Calibri", 9.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label12.Location = New System.Drawing.Point(449, 51)
-        Me.Label12.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
-        Me.Label12.Name = "Label12"
-        Me.Label12.Size = New System.Drawing.Size(142, 14)
-        Me.Label12.TabIndex = 361
-        Me.Label12.Text = "Tecla Ctrl + A: Elegir Cliente"
-        '
         'F0_VentasSupermercado
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
@@ -870,6 +911,7 @@ Partial Class F0_VentasSupermercado
         CType(Me.tbTotal, System.ComponentModel.ISupportInitialize).EndInit()
         Me.Panel1.ResumeLayout(False)
         Me.Panel1.PerformLayout()
+        CType(Me.CbTDoc, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.tbFechaVenc, System.ComponentModel.ISupportInitialize).EndInit()
         Me.PanelTop.ResumeLayout(False)
         CType(Me.PictureBox2, System.ComponentModel.ISupportInitialize).EndInit()
@@ -928,4 +970,6 @@ Partial Class F0_VentasSupermercado
     Friend WithEvents lbCredito As Label
     Friend WithEvents tbFechaVenc As DevComponents.Editors.DateTimeAdv.DateTimeInput
     Friend WithEvents Label12 As Label
+    Public WithEvents CbTDoc As Janus.Windows.GridEX.EditControls.MultiColumnCombo
+    Friend WithEvents TbEmailS As DevComponents.DotNetBar.Controls.TextBoxX
 End Class

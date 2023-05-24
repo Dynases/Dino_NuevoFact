@@ -144,7 +144,7 @@ Public Class F_Inventario
                          dtVentas.Rows(i).Item("tafact"),
                        dtVentas.Rows(i).Item("tahact"), dtVentas.Rows(i).Item("tauact"),
                        dtDetalle.Rows(j).Item("tbty5prod"), saldo,
-                      "20170101", CDate("2017/01/01"))
+                      "20500101", CDate("2050/01/01"))
 
                     Else
                         While (k <= dtSaldos.Rows.Count - 1 And saldo > 0)

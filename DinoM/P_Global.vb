@@ -168,6 +168,12 @@ Module P_Global
     Public gb_TipoCierreCaja As Integer = 1 '1=Muestra CierreCaja Normal, 2= Muestra CierreCaja2(Cierre Caja Negra)
     Public gb_CodBarraPeso As Integer = 0 '0=Para que no entre al codigo de barra por peso, 1=Para que entre al codigo de barra por peso
 
+    Public gb_cufSifac As String = ""
+
+    ''Parámetros para facturación
+    Public gb_email As String = ""
+    Public gb_password As String = ""
+    Public gb_url As String = ""
 #End Region
 
 End Module

@@ -11,7 +11,7 @@
     <AssemblyName>DinoM</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <MyType>WindowsForms</MyType>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <SccProjectName>SAK</SccProjectName>
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
@@ -31,6 +31,7 @@
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -173,8 +174,15 @@
     <Reference Include="Janus.Windows.UI.v3">
       <HintPath>C:\librerias\Janus\Janus.Windows.UI.v3.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\librerias\Json\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="OnBarcode.Barcode.WinForms">
       <HintPath>C:\librerias\QrCode\OnBarcode.Barcode.WinForms.dll</HintPath>
+    </Reference>
+    <Reference Include="RestSharp">
+      <HintPath>C:\librerias\Json\RestSharp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -494,6 +502,25 @@
       <DependentUpon>KardexClienteRes.rpt</DependentUpon>
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="modelosApi\AeconomicaResp.vb" />
+    <Compile Include="modelosApi\AnulacionEnvio.vb" />
+    <Compile Include="modelosApi\AnulacionResp.vb" />
+    <Compile Include="modelosApi\ConnSiat.vb" />
+    <Compile Include="modelosApi\DBApi.vb" />
+    <Compile Include="modelosApi\EmisorEnvio.vb" />
+    <Compile Include="modelosApi\EmisorResp.vb" />
+    <Compile Include="modelosApi\HomologEnvio.vb" />
+    <Compile Include="modelosApi\HomologResp.vb" />
+    <Compile Include="modelosApi\ListarFacturas.vb" />
+    <Compile Include="modelosApi\ListarPServResp.vb" />
+    <Compile Include="modelosApi\LoginEnvio.vb" />
+    <Compile Include="modelosApi\LoginResp.vb" />
+    <Compile Include="modelosApi\NitResp.vb" />
+    <Compile Include="modelosApi\Parametro.vb" />
+    <Compile Include="modelosApi\RespMetodosPago.vb" />
+    <Compile Include="modelosApi\RespMotivoAnulacion.vb" />
+    <Compile Include="modelosApi\RespTipoDoc.vb" />
+    <Compile Include="modelosApi\UmedidaResp.vb" />
     <Compile Include="NroCaja.Designer.vb">
       <DependentUpon>NroCaja.vb</DependentUpon>
     </Compile>
@@ -653,8 +680,8 @@
     <Compile Include="Reporte\R_EstadoCuentasClientes.vb">
       <DependentUpon>R_EstadoCuentasClientes.rpt</DependentUpon>
       <AutoGen>True</AutoGen>
-      <SubType>Component</SubType>
       <DesignTime>True</DesignTime>
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="Reporte\R_EstadoCuentasCompraTodos.vb">
       <DependentUpon>R_EstadoCuentasCompraTodos.rpt</DependentUpon>
@@ -767,8 +794,8 @@
     <Compile Include="Reporte\R_ReportePagosCobranzasCarta.vb">
       <DependentUpon>R_ReportePagosCobranzasCarta.rpt</DependentUpon>
       <AutoGen>True</AutoGen>
-      <SubType>Component</SubType>
       <DesignTime>True</DesignTime>
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="Reporte\R_SaldosPorLinea.vb">
       <AutoGen>True</AutoGen>
@@ -779,8 +806,8 @@
     <Compile Include="Reporte\R_GraficaVendedorVentasAlmacen.vb">
       <DependentUpon>R_GraficaVendedorVentasAlmacen.rpt</DependentUpon>
       <AutoGen>True</AutoGen>
-      <SubType>Component</SubType>
       <DesignTime>True</DesignTime>
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="Reporte\R_GraficaVendedorVentasRendimiento.vb">
       <DependentUpon>R_GraficaVendedorVentasRendimiento.rpt</DependentUpon>
@@ -851,8 +878,8 @@
     <Compile Include="Reporte\R_KardexInventarioProductoSinLote.vb">
       <DependentUpon>R_KardexInventarioProductoSinLote.rpt</DependentUpon>
       <AutoGen>True</AutoGen>
-      <SubType>Component</SubType>
       <DesignTime>True</DesignTime>
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="Reporte\R_KardexInventarioProductoAgrupado.vb">
       <DependentUpon>R_KardexInventarioProductoAgrupado.rpt</DependentUpon>
@@ -893,8 +920,8 @@
     <Compile Include="Reporte\R_Proforma.vb">
       <DependentUpon>R_Proforma.rpt</DependentUpon>
       <AutoGen>True</AutoGen>
-      <SubType>Component</SubType>
       <DesignTime>True</DesignTime>
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="Reporte\R_NotaDeVentaSinLote.vb">
       <DependentUpon>R_NotaDeVentaSinLote.rpt</DependentUpon>
@@ -923,8 +950,8 @@
     <Compile Include="Reporte\R_StockActualLote.vb">
       <DependentUpon>R_StockActualLote.rpt</DependentUpon>
       <AutoGen>True</AutoGen>
-      <SubType>Component</SubType>
       <DesignTime>True</DesignTime>
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="Reporte\R_StockDiferencia.vb">
       <DependentUpon>R_StockDiferencia.rpt</DependentUpon>
@@ -1001,8 +1028,8 @@
     <Compile Include="Reporte\R_VentasAtendidasVendedorAlmacen.vb">
       <DependentUpon>R_VentasAtendidasVendedorAlmacen.rpt</DependentUpon>
       <AutoGen>True</AutoGen>
-      <SubType>Component</SubType>
       <DesignTime>True</DesignTime>
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="Reporte\R_VentasAtendidasAlmacenVendedor.vb">
       <AutoGen>True</AutoGen>
@@ -1074,6 +1101,12 @@
       <DependentUpon>F_Inventario.vb</DependentUpon>
     </Compile>
     <Compile Include="Utils\F_Inventario.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Utils\notifi.designer.vb">
+      <DependentUpon>notifi.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Utils\notifi.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Visualizador.Designer.vb">
@@ -1584,6 +1617,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Utils\F_Inventario.resx">
       <DependentUpon>F_Inventario.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Utils\notifi.resx">
+      <DependentUpon>notifi.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Visualizador.resx">
       <DependentUpon>Visualizador.vb</DependentUpon>

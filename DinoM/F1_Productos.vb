@@ -5,6 +5,11 @@ Imports Janus.Windows.GridEX
 Imports System.IO
 Imports DevComponents.DotNetBar.SuperGrid
 Imports DevComponents.DotNetBar.Controls
+Imports Newtonsoft.Json
+Imports DinoM.AeconomicaResp
+Imports DinoM.UmedidaResp
+Imports DinoM.HomologResp
+Imports DinoM.ListarPServResp
 
 Public Class F1_Productos
     Dim _Inter As Integer = 0
@@ -17,6 +22,14 @@ Public Class F1_Productos
     Public _tab As SuperTabItem
     Public _modulo As SideNavItem
     Public Limpiar As Boolean = False  'Bandera para indicar si limpiar todos los datos o mantener datos ya registrados
+
+    'variables sifac
+    Public tokenSifac As String
+    Public CodActEco As String
+    Public CodProSINs As String
+    Public Ume As Integer
+    Public preciosifac As Double
+
 #End Region
 #Region "Metodos Privados"
     Private Sub _prIniciarTodo()
@@ -260,6 +273,14 @@ Public Class F1_Productos
         cbUniVenta.ReadOnly = False
         cbUnidMaxima.ReadOnly = False
         tbConversion.IsInputReadOnly = False
+
+        ''Facturacion
+        CbAeconomica.ReadOnly = False
+        CbUmedida.ReadOnly = False
+        CbProdServ.ReadOnly = False
+        TbPrecioPsifac.ReadOnly = False
+
+
         _prCrearCarpetaImagenes()
         _prCrearCarpetaTemporal()
         BtAdicionar.Visible = True
@@ -290,6 +311,13 @@ Public Class F1_Productos
         tbConversion.IsInputReadOnly = True
         tbStockMinimo.IsInputReadOnly = True
         BtAdicionar.Visible = False
+
+        ''Facturacion
+        CbAeconomica.ReadOnly = True
+        CbUmedida.ReadOnly = True
+        CbProdServ.ReadOnly = True
+        TbPrecioPsifac.ReadOnly = True
+
         _prStyleJanus()
         JGrM_Buscador.Focus()
         Limpiar = False
@@ -306,6 +334,13 @@ Public Class F1_Productos
         tbDescPro.Clear()
         tbDescDet.Clear()
         tbDescCort.Clear()
+
+        ''Para Facturación
+        CbAeconomica.SelectedIndex = -1
+        CbUmedida.SelectedIndex = -1
+        CbProdServ.SelectedIndex = -1
+        TbPrecioPsifac.Clear()
+
         If (Limpiar = False) Then
             _prSeleccionarCombo(cbgrupo1)
             _prSeleccionarCombo(cbgrupo2)
@@ -371,7 +406,9 @@ Public Class F1_Productos
                                                 tbConversion.Text,
                                                 IIf(tbStockMinimo.Text = String.Empty, 0, tbStockMinimo.Text),
                                                 IIf(swEstado.Value = True, 1, 0), nameImg,
-                                                quitarUltimaFilaVacia(CType(dgjDetalleProducto.DataSource, DataTable).DefaultView.ToTable(False, "yfanumi", "yfayfnumi", "yfasim", "yfadesc", "estado")), tbDescDet.Text, cbgrupo5.Value)
+                                                quitarUltimaFilaVacia(CType(dgjDetalleProducto.DataSource, DataTable).DefaultView.ToTable(False, "yfanumi", "yfayfnumi", "yfasim", "yfadesc", "estado")),
+                                                tbDescDet.Text, cbgrupo5.Value, CbAeconomica.Value,
+                                                CbUmedida.Value, CbProdServ.Value, TbPrecioPsifac.Text)
 
 
         If res Then
@@ -401,9 +438,21 @@ Public Class F1_Productos
 
         Dim nameImage As String = JGrM_Buscador.GetValue("yfimg")
         If (Modificado = False) Then
-            res = L_fnModificarProducto(tbCodigo.Text, tbCodProd.Text, tbCodBarra.Text, tbDescPro.Text, tbDescCort.Text, cbgrupo1.Value, cbgrupo2.Value, cbgrupo3.Value, cbgrupo4.Value, cbUMed.Value, cbUniVenta.Value, cbUnidMaxima.Value, tbConversion.Text, IIf(tbStockMinimo.Text = String.Empty, 0, tbStockMinimo.Text), IIf(swEstado.Value = True, 1, 0), nameImage, quitarUltimaFilaVacia(CType(dgjDetalleProducto.DataSource, DataTable).DefaultView.ToTable(False, "yfanumi", "yfayfnumi", "yfasim", "yfadesc", "estado")), tbDescDet.Text, cbgrupo5.Value)
+            res = L_fnModificarProducto(tbCodigo.Text, tbCodProd.Text, tbCodBarra.Text, tbDescPro.Text,
+                                        tbDescCort.Text, cbgrupo1.Value, cbgrupo2.Value, cbgrupo3.Value,
+                                        cbgrupo4.Value, cbUMed.Value, cbUniVenta.Value, cbUnidMaxima.Value,
+                                        tbConversion.Text, IIf(tbStockMinimo.Text = String.Empty, 0, tbStockMinimo.Text), IIf(swEstado.Value = True, 1, 0),
+                                        nameImage, quitarUltimaFilaVacia(CType(dgjDetalleProducto.DataSource, DataTable).DefaultView.ToTable(False, "yfanumi", "yfayfnumi", "yfasim", "yfadesc", "estado")),
+                                        tbDescDet.Text, cbgrupo5.Value, CbAeconomica.Value, CbUmedida.Value,
+                                        CbProdServ.Value, TbPrecioPsifac.Text)
         Else
-            res = L_fnModificarProducto(tbCodigo.Text, tbCodProd.Text, tbCodBarra.Text, tbDescPro.Text, tbDescCort.Text, cbgrupo1.Value, cbgrupo2.Value, cbgrupo3.Value, cbgrupo4.Value, cbUMed.Value, cbUniVenta.Value, cbUnidMaxima.Value, tbConversion.Text, tbStockMinimo.Text, IIf(swEstado.Value = True, 1, 0), nameImg, quitarUltimaFilaVacia(CType(dgjDetalleProducto.DataSource, DataTable).DefaultView.ToTable(False, "yfanumi", "yfayfnumi", "yfasim", "yfadesc", "estado")), tbDescDet.Text, cbgrupo5.Value)
+            res = L_fnModificarProducto(tbCodigo.Text, tbCodProd.Text, tbCodBarra.Text, tbDescPro.Text,
+                                        tbDescCort.Text, cbgrupo1.Value, cbgrupo2.Value, cbgrupo3.Value,
+                                        cbgrupo4.Value, cbUMed.Value, cbUniVenta.Value, cbUnidMaxima.Value,
+                                        tbConversion.Text, tbStockMinimo.Text, IIf(swEstado.Value = True, 1, 0),
+                                        nameImg, quitarUltimaFilaVacia(CType(dgjDetalleProducto.DataSource, DataTable).DefaultView.ToTable(False, "yfanumi", "yfayfnumi", "yfasim", "yfadesc", "estado")),
+                                        tbDescDet.Text, cbgrupo5.Value, CbAeconomica.Value, CbUmedida.Value,
+                                        CbProdServ.Value, TbPrecioPsifac.Text)
         End If
         If res Then
 
@@ -556,6 +605,40 @@ Public Class F1_Productos
             MEP.SetError(cbUMed, "")
         End If
 
+        ''Sifac
+        If CbAeconomica.SelectedIndex < 0 Then
+            CbAeconomica.BackColor = Color.Red
+            MEP.SetError(CbAeconomica, "Seleccione la Actividad Económica!".ToUpper)
+            _ok = False
+        Else
+            CbAeconomica.BackColor = Color.White
+            MEP.SetError(CbAeconomica, "")
+        End If
+        If CbUmedida.SelectedIndex < 0 Then
+            CbUmedida.BackColor = Color.Red
+            MEP.SetError(CbUmedida, "Seleccione la Unidad de Medida!".ToUpper)
+            _ok = False
+        Else
+            CbUmedida.BackColor = Color.White
+            MEP.SetError(CbUmedida, "")
+        End If
+        If CbProdServ.SelectedIndex < 0 Then
+            CbProdServ.BackColor = Color.Red
+            MEP.SetError(CbProdServ, "Seleccione el Codigo SIN!".ToUpper)
+            _ok = False
+        Else
+            CbProdServ.BackColor = Color.White
+            MEP.SetError(CbProdServ, "")
+        End If
+        If TbPrecioPsifac.Text = String.Empty Or TbPrecioPsifac.Text <= "0" Then
+            TbPrecioPsifac.BackColor = Color.Red
+            MEP.SetError(TbPrecioPsifac, "Introduzca precio mayor a 0!".ToUpper)
+            _ok = False
+        Else
+            TbPrecioPsifac.BackColor = Color.White
+            MEP.SetError(TbPrecioPsifac, "")
+        End If
+
 
         MHighlighterFocus.UpdateHighlights()
         Return _ok
@@ -586,6 +669,12 @@ Public Class F1_Productos
         listEstCeldas.Add(New Modelo.Celda("yfvsup", False))
         listEstCeldas.Add(New Modelo.Celda("yfmstk", False))
         listEstCeldas.Add(New Modelo.Celda("yfclot", False))
+
+        listEstCeldas.Add(New Modelo.Celda("ygcodact", False))
+        listEstCeldas.Add(New Modelo.Celda("ygcodu", False))
+        listEstCeldas.Add(New Modelo.Celda("ygcodsin", False))
+        listEstCeldas.Add(New Modelo.Celda("ygprecio", False))
+
         listEstCeldas.Add(New Modelo.Celda("yfsmin", False))
         listEstCeldas.Add(New Modelo.Celda("yfap", False))
         listEstCeldas.Add(New Modelo.Celda("yfimg", False))
@@ -637,6 +726,12 @@ Public Class F1_Productos
             lbHora.Text = .GetValue("yfhact").ToString
             lbUsuario.Text = .GetValue("yfuact").ToString
 
+            CbAeconomica.Value = .GetValue("ygcodact")
+            CbUmedida.Value = .GetValue("ygcodu")
+            CbProdServ.Value = .GetValue("ygcodsin")
+            TbPrecioPsifac.Text = .GetValue("ygprecio").ToString
+
+
         End With
         Dim name As String = JGrM_Buscador.GetValue("yfimg")
         If name.Equals("Default.jpg") Or Not File.Exists(RutaGlobal + "\Imagenes\Imagenes ProductoDino" + name) Then
@@ -686,6 +781,13 @@ Public Class F1_Productos
 #End Region
 
     Private Sub F1_Productos_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        tokenSifac = F0_VentasSupermercado.ObtToken()
+        UnidadMedida(tokenSifac)
+        CbUmedida.SelectedIndex = -1
+        ActividadesEconomicas(tokenSifac)
+        CbAeconomica.SelectedIndex = -1
+        ListarProductoServicio(tokenSifac)
+        CbProdServ.SelectedIndex = -1
         _prIniciarTodo()
     End Sub
 
@@ -1134,7 +1236,238 @@ Public Class F1_Productos
         End If
     End Sub
 
-    Private Sub btnGrabar_Click(sender As Object, e As EventArgs) Handles btnGrabar.Click
 
-    End Sub
+    ''Sifac
+    Public Function ActividadesEconomicas(tokenObtenido)
+
+        Dim api = New DBApi()
+
+        Dim url = gb_url + "/api/v2/actividades-economicas"
+
+        Dim headers = New List(Of Parametro) From {
+            New Parametro("Authorization", "Bearer " + tokenObtenido),
+            New Parametro("Content-Type", "Accept:application/json; charset=utf-8")
+        }
+
+        Dim parametros = New List(Of Parametro)
+
+        Dim response = api.MGet(url, headers, parametros)
+
+        Dim result = JsonConvert.DeserializeObject(Of Aecono)(response)
+
+        With CbAeconomica
+            .DropDownList.Columns.Clear()
+            .DropDownList.Columns.Add("codigoActividad").Width = 70
+            .DropDownList.Columns("codigoActividad").Caption = "COD"
+            .DropDownList.Columns.Add("descripcion").Width = 1000
+            .DropDownList.Columns("descripcion").Caption = "DESCRIPCION"
+            .ValueMember = "codigoActividad"
+            .DisplayMember = "descripcion"
+            .DataSource = result.data
+            .Refresh()
+        End With
+
+    End Function
+
+    Public Function UnidadMedida(tokenObtenido)
+
+        Dim api = New DBApi()
+
+        Dim url = gb_url + "/api/v2/unidad-medida"
+
+        Dim headers = New List(Of Parametro) From {
+            New Parametro("Authorization", "Bearer " + tokenObtenido),
+            New Parametro("Content-Type", "Accept:application/json; charset=utf-8")
+        }
+
+        Dim parametros = New List(Of Parametro)
+
+        Dim response = api.MGet(url, headers, parametros)
+
+        Dim result = JsonConvert.DeserializeObject(Of Umedida)(response)
+
+
+        With CbUmedida
+            .DropDownList.Columns.Clear()
+            .DropDownList.Columns.Add("codigoClasificador").Width = 70
+            .DropDownList.Columns("codigoClasificador").Caption = "COD"
+            .DropDownList.Columns.Add("descripcion").Width = 350
+            .DropDownList.Columns("descripcion").Caption = "DESCRIPCION"
+            .ValueMember = "codigoClasificador"
+            .DisplayMember = "descripcion"
+            .DataSource = result.data
+            .Refresh()
+        End With
+        Return ""
+    End Function
+    Public Function ListarProductoServicio(tokenObtenido As String, Optional ae As Integer = 5)
+        Dim pagina = "1"
+        Dim cantpag = "1000"
+        Dim api = New DBApi()
+
+        Dim url = gb_url + "/api/v2/productos-servicios/1/1000"
+
+        Dim headers = New List(Of Parametro) From {
+            New Parametro("Authorization", "Bearer " + tokenObtenido),
+            New Parametro("Content-Type", "Accept:application/json; charset=utf-8")
+        }
+
+        Dim parametros = New List(Of Parametro)
+
+        Dim response = api.MGet(url, headers, parametros)
+
+        Dim result = JsonConvert.DeserializeObject(Of ProServ)(response)
+        Dim resultError = JsonConvert.DeserializeObject(Of ProServ1)(response)
+
+        Dim codigo = result.meta.code
+
+
+
+        'Dim json = JsonConvert.SerializeObject(result)
+        'MsgBox(json)
+        'For Each y In result.data
+
+        'Next
+        ' Mid(cadena, 8, 6)
+        If codigo = 200 Then
+
+            With CbProdServ
+                .DropDownList.Columns.Clear()
+                .DropDownList.Columns.Add("codigoActividad").Width = 80
+                .DropDownList.Columns("codigoActividad").Caption = "COD"
+                .DropDownList.Columns.Add("codigoProducto").Width = 80
+                .DropDownList.Columns("codigoProducto").Caption = "COD. PROD"
+                .DropDownList.Columns.Add("descripcionProducto").Width = 1150
+                .DropDownList.Columns("descripcionProducto").Caption = "DESCRIPCION"
+                .ValueMember = "codigoProducto"
+                .DisplayMember = "descripcionProducto"
+                .DataSource = result.data
+                .Refresh()
+            End With
+
+
+
+            'CbProdServ.DropDownList.FilterRow = " company_Type=1"
+        ElseIf codigo = 406 Or codigo = 409 Or codigo = 500 Then
+
+            Dim details = JsonConvert.SerializeObject(resultError.errors.details)
+            Dim siat = JsonConvert.SerializeObject(resultError.errors.siat)
+            Dim notifi = New notifi
+
+            notifi.tipo = 2
+            notifi.Context = "SIFAC".ToUpper
+            notifi.Header = "Error de solicitud - Código: " + codigo.ToString() & vbCrLf & " " & vbCrLf & details & vbCrLf & siat & vbCrLf & " " & vbCrLf & "Espere".ToUpper
+            notifi.ShowDialog()
+            'MsgBox("Error de solicitud: " + codigo.ToString() & vbCrLf & " " & vbCrLf & details & vbCrLf & siat & vbCrLf & " " & vbCrLf & "La factura no pudo enviarse al Siat")
+        ElseIf codigo = 400 Or codigo = 401 Or codigo = 404 Or codigo = 405 Or codigo = 422 Then
+            Dim details = JsonConvert.SerializeObject(resultError.errors.details)
+            Dim notifi = New notifi
+
+            notifi.tipo = 2
+            notifi.Context = "SIFAC".ToUpper
+            notifi.Header = "Error de solicitud - Código: " + codigo.ToString() & vbCrLf & " " & vbCrLf & details & vbCrLf & " " & vbCrLf & "Espere".ToUpper
+            notifi.ShowDialog()
+            'MsgBox("Error de solicitud: " + codigo.ToString() & vbCrLf & " " & vbCrLf & details & vbCrLf & " " & vbCrLf & "La factura no pudo enviarse al Siat")
+        End If
+        Return ""
+    End Function
+    Public Function Homologar(tokenObtenido)
+
+        Dim api = New DBApi()
+
+        Dim Aeco = CbAeconomica.Text 'obtiene el 'Codigo Metodo de pago' 
+        Dim delimitador() As String = {"|"}
+        Dim vectoraux() As String
+        vectoraux = Aeco.Split(delimitador, StringSplitOptions.None)
+
+        CodActEco = CbAeconomica.Value 'vectoraux(0) 'asignando el valor del array a un string
+
+        Ume = CbUmedida.Value 'SelectedIndex + 1 'obtiene el 'Codigo Tipo de documento' 
+
+        Dim CodProdSIN = CbProdServ.Text
+        Dim delimitador1() As String = {"|"}
+        Dim vectoraux1() As String
+        vectoraux1 = CodProdSIN.Split(delimitador, StringSplitOptions.None)
+
+        CodProSINs = CbProdServ.Value ' vectoraux1(1) 'asignando el valor del array a un string
+
+        preciosifac = CDbl(TbPrecioPsifac.Text)
+
+        Dim Henvio = New HomologEnvio.HomoEnv()
+
+        Henvio.codigoActividad = CodActEco
+        Henvio.codigoProductoSin = CodProSINs
+        Henvio.codigoProducto = tbCodigo.Text
+        Henvio.codigoDocumentoSector = 1
+        Henvio.descripcion = tbDescPro.Text
+        Henvio.precio = preciosifac
+        Henvio.unidadMedida = Ume
+        Henvio.numeroImei = ""
+        Henvio.numeroSerie = ""
+        Henvio.unidadMedidaExtraccion = 0
+        Henvio.descripcionLeyes = ""
+        Henvio.codigoNandina = ""
+        Henvio.tipo = ""
+        Henvio.formula = ""
+
+        Dim url = gb_url + "/api/v2/homologar"
+
+        Dim headers = New List(Of Parametro) From {
+            New Parametro("Authorization", "Bearer " + tokenObtenido),
+            New Parametro("Content-Type", "Accept:application/json; charset=utf-8")
+        }
+
+        Dim parametros = New List(Of Parametro)
+
+        Dim response = api.Post(url, headers, parametros, Henvio)
+
+        Dim result = JsonConvert.DeserializeObject(Of HomoResp)(response)
+        Dim resultError = JsonConvert.DeserializeObject(Of Resp400)(response)
+
+        Dim codigo = result.meta.code
+        'Dim xml As String
+        If codigo = 200 Then
+            Dim pos = result.data
+            Dim contpos = JsonConvert.SerializeObject(pos(0))
+            Dim contposOBJ = JsonConvert.DeserializeObject(Of DataARA)(contpos)
+            Dim details = contposOBJ.details
+            'xml = result.data.dataXml
+            'Dim doc As XmlDocument = New XmlDocument()
+            'doc.LoadXml(xml)
+            'Dim nodo = doc.DocumentElement("cabecera")
+            'gb_cufSifac = nodo.ChildNodes.Item(5).InnerText 'extrae dato CUF de xml sifac
+
+            Dim notifi = New notifi
+
+            notifi.tipo = 2
+            notifi.Context = "SIFAC".ToUpper
+            notifi.Header = "Proceso Exitoso - Código: " + codigo.ToString() & vbCrLf & " " & vbCrLf & details & vbCrLf & " " & vbCrLf & "Producto Homologado".ToUpper
+            notifi.ShowDialog()
+            'MsgBox("Proceso Exitoso: " + codigo.ToString() & vbCrLf & " " & vbCrLf & details & vbCrLf & " " & vbCrLf & "Factura enviada al Siat")
+        ElseIf codigo = 406 Or codigo = 409 Or codigo = 500 Then
+
+            Dim details = JsonConvert.SerializeObject(resultError.errors.details)
+            Dim siat = JsonConvert.SerializeObject(resultError.errors.siat)
+            Dim notifi = New notifi
+
+            notifi.tipo = 2
+            notifi.Context = "SIFAC".ToUpper
+            notifi.Header = "Error de solicitud - Código: " + codigo.ToString() & vbCrLf & " " & vbCrLf & details & vbCrLf & siat & vbCrLf & " " & vbCrLf & "Producto no Homologado".ToUpper
+            notifi.ShowDialog()
+            'MsgBox("Error de solicitud: " + codigo.ToString() & vbCrLf & " " & vbCrLf & details & vbCrLf & siat & vbCrLf & " " & vbCrLf & "La factura no pudo enviarse al Siat")
+        ElseIf codigo = 400 Or codigo = 401 Or codigo = 404 Or codigo = 405 Or codigo = 422 Then
+            Dim details = JsonConvert.SerializeObject(resultError.errors.details)
+            Dim notifi = New notifi
+
+            notifi.tipo = 2
+            notifi.Context = "SIFAC".ToUpper
+            notifi.Header = "Error de solicitud - Código: " + codigo.ToString() & vbCrLf & " " & vbCrLf & details & vbCrLf & " " & vbCrLf & "Producto no Homologado".ToUpper
+            notifi.ShowDialog()
+            'MsgBox("Error de solicitud: " + codigo.ToString() & vbCrLf & " " & vbCrLf & details & vbCrLf & " " & vbCrLf & "La factura no pudo enviarse al Siat")
+        End If
+
+        Return codigo
+    End Function
+
+
 End Class

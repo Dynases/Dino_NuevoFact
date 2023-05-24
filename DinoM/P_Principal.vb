@@ -91,6 +91,8 @@ Public Class P_Principal
 
         P_prCargarParametros()
         _prValidarMayusculas()
+        P_prCargarParametrosFacturacion()
+
     End Sub
     Public Sub _prValidarMayusculas()
         Dim dt As DataTable = L_fnPorcUtilidad()
@@ -118,7 +120,13 @@ Public Class P_Principal
         gb_CodBarraPeso = dtConfSistema.Rows(0).Item("cccCodBarraPeso")
 
     End Sub
+    Private Sub P_prCargarParametrosFacturacion()
+        Dim dtFact As DataTable = L_fnConfParametrosFacturacion()
 
+        gb_email = dtFact.Rows(0).Item("email")
+        gb_password = dtFact.Rows(0).Item("password")
+        gb_url = dtFact.Rows(0).Item("url")
+    End Sub
     Private Sub _prCargarConfiguracionSistema()
         'Dim dtConf As DataTable = L_prConGlobalGeneral()
         'gd_notaAproTeo = dtConf.Rows(0).Item("gbaproteo")
