@@ -586,6 +586,12 @@ Public Class F0_VentasSupermercado
         With grdetalle.RootTable.Columns("tbProveedorId")
             .Visible = False
         End With
+        With grdetalle.RootTable.Columns("ygcodsin")
+            .Visible = False
+        End With
+        With grdetalle.RootTable.Columns("ygcodu")
+            .Visible = False
+        End With
         With grdetalle
             .GroupByBoxVisible = False
             'diseño de la grilla
@@ -602,9 +608,12 @@ Public Class F0_VentasSupermercado
         If _ValidarCampos() = False Then
             Exit Sub
         End If
+        Dim Succes As Integer = Emisor(tokenObtenido)
+        If Succes = 200 Then
+            _GuardarNuevo()
+        End If
 
 
-        _GuardarNuevo()
 
     End Sub
     Public Sub actualizarSaldoSinLote(ByRef dt As DataTable)
@@ -816,6 +825,12 @@ Public Class F0_VentasSupermercado
             .Width = 100
             .Visible = False
             .Caption = "Grupo Desc."
+        End With
+        With grProductos.RootTable.Columns("ygcodsin")
+            .Visible = False
+        End With
+        With grProductos.RootTable.Columns("ygcodu")
+            .Visible = False
         End With
 
         With grProductos
@@ -1404,7 +1419,7 @@ Public Class F0_VentasSupermercado
         Return True
     End Function
     Private Sub _prInsertarMontoNuevo(ByRef tabla As DataTable)
-        tabla.Rows.Add(0, TotalBs, TotalSus, TotalTarjeta, TipoCambio, 0, TotalQR)
+        tabla.Rows.Add(0, TotalBs, TotalSus, TotalTarjeta, TipoCambio, NroTarjeta, TotalQR, 0)
     End Sub
 
     'Private Sub _prInsertarMontoModificar(ByRef tabla As DataTable)
@@ -1413,7 +1428,7 @@ Public Class F0_VentasSupermercado
     Public Sub _GuardarNuevo()
         Try
             Dim numi As String = ""
-            Dim tabla As DataTable = L_fnMostrarMontos(0)
+            Dim tabla As DataTable = L_fnMostrarMontos2(0)
             Dim factura = gb_FacturaEmite
             _prInsertarMontoNuevo(tabla)
             ''Verifica si existe estock para los productos
@@ -1431,8 +1446,10 @@ Public Class F0_VentasSupermercado
                 dtDetalle = CType(grdetalle.DataSource, DataTable)
             End If
 
-            Dim res As Boolean = L_fnGrabarVenta(numi, "", Now.Date.ToString("yyyy/MM/dd"), Vendedor, IIf(swTipoVenta.Value = True, 1, 0), IIf(swTipoVenta.Value = True,
-                                                Now.Date.ToString("yyyy/MM/dd"), tbFechaVenc.Value.ToString("yyyy/MM/dd")), _CodCliente, 1, "", tbDescuento.Value, 0, Str(tbTotal.Value), dtDetalle, Sucursal, 0, tabla, gs_NroCaja, Programa, dtDetalleReplica)
+            Dim res As Boolean = L_fnGrabarVenta(numi, "", Now.Date.ToString("yyyy/MM/dd"), Vendedor, IIf(swTipoVenta.Value = True, 1, 0),
+                                                 IIf(swTipoVenta.Value = True, Now.Date.ToString("yyyy/MM/dd"), tbFechaVenc.Value.ToString("yyyy/MM/dd")),
+                                                 _CodCliente, 1, "", tbDescuento.Value, 0, Str(tbTotal.Value), dtDetalle, Sucursal, 0, tabla, gs_NroCaja,
+                                                 Programa, dtDetalleReplica, lbNit.Text, lbCliente.Text, TbEmailS.Text, CbTDoc.Value, 0)
             If res Then
                 'res = P_fnGrabarFacturarTFV001(numi)
                 'Emite factura
@@ -1546,6 +1563,8 @@ Public Class F0_VentasSupermercado
                 CType(grdetalle.DataSource, DataTable).Rows(pos).Item("tbpbas") = grProductos.GetValue("yhprecio")
                 CType(grdetalle.DataSource, DataTable).Rows(pos).Item("tbptot") = grProductos.GetValue("yhprecio")
                 CType(grdetalle.DataSource, DataTable).Rows(pos).Item("tbtotdesc") = grProductos.GetValue("yhprecio")
+                CType(grdetalle.DataSource, DataTable).Rows(pos).Item("ygcodsin") = grProductos.GetValue("ygcodsin")
+                CType(grdetalle.DataSource, DataTable).Rows(pos).Item("ygcodu") = grProductos.GetValue("ygcodu")
                 CType(grdetalle.DataSource, DataTable).Rows(pos).Item("tbcmin") = 1
                 'If (gb_FacturaIncluirICE) Then
                 '    CType(grdetalle.DataSource, DataTable).Rows(pos).Item("tbpcos") = grProductos.GetValue("pcos")
@@ -1622,7 +1641,8 @@ Public Class F0_VentasSupermercado
         If (res) Then
             If (P_fnValidarFactura()) Then
                 'Validar para facturar
-                P_prImprimirFacturar(numi, True, True) '_Codigo de a tabla TV001
+                'P_prImprimirFacturar(numi, True, True) 
+                P_prImprimirFacturaNueva(numi, True, True)
             Else
                 'Volver todo al estada anterior
                 ToastNotification.Show(Me, "No es posible facturar, vuelva a ingresar he intente nuevamente!!!".ToUpper,
@@ -1633,9 +1653,9 @@ Public Class F0_VentasSupermercado
             End If
 
             If (Not lbNit.Text.Trim.Equals("0")) Then
-                L_Grabar_Nit(lbNit.Text.Trim, lbCliente.Text.Trim, "")
+                L_Grabar_Nit(lbNit.Text.Trim, lbCliente.Text.Trim, "", CbTDoc.Value, TbEmailS.Text)
             Else
-                L_Grabar_Nit(lbNit.Text, "S/N", "")
+                L_Grabar_Nit(lbNit.Text, "S/N", "", "", "")
             End If
         End If
 
@@ -1643,24 +1663,27 @@ Public Class F0_VentasSupermercado
     End Function
 
     Private Function P_fnGrabarFacturarTFV001(numi As String) As Boolean
-        Dim a As Double = CDbl(Convert.ToDouble(Str(tbTotal.Value)) + tbDescuento.Value)
+        Dim a As Double = CDbl(Convert.ToDouble(Str(tbTotal.Value)))
         'Dim b As Double = CDbl(IIf(IsDBNull(tbIce.Value), 0, tbIce.Value)) 'Ya esta calculado el 55% del ICE
         Dim b As Double = CDbl(0)
         Dim c As Double = CDbl("0")
         Dim d As Double = CDbl("0")
         Dim e As Double = a - b - c - d
-        Dim f As Double = CDbl(tbDescuento.Value)
+        Dim f As Double = 0
         Dim g As Double = e - f
         Dim h As Double = g * (gi_IVA / 100)
 
         Dim res As Boolean = False
         Dim _Hora As String = Now.Hour.ToString("D2") + ":" + Now.Minute.ToString("D2")
+        Dim Anhio As Integer = Now.Date.Year
         'Grabado de Cabesera Factura
         L_Grabar_Factura(numi,
-                        Now.Date.ToString("yyyy/MM/dd"), "0", "0",
+                        Now.Date.ToString("yyyy/MM/dd"),
+                       NroFact,
+                        gb_cufSifac,
                         "1",
                         lbNit.Text.Trim,
-                        _CodCliente,
+                       "B-" + IdNit,
                         lbCliente.Text,
                         "",
                         CStr(Format(a, "####0.00")),
@@ -1676,7 +1699,14 @@ Public Class F0_VentasSupermercado
                         "''",
                         Sucursal,
                         numi,
-                       _Hora)
+                        _Hora,
+                        QrUrl,
+                        FactUrl,
+                        SegundaLeyenda,
+                        TerceraLeyenda,
+                        Cudf,
+                        gs_NroCaja,
+                        Anhio)
 
         'Grabar Nuevo y Modificado en la BDDiconDinoEco en la tabla TPA001
         If ("" = String.Empty) Then
@@ -1914,6 +1944,134 @@ Public Class F0_VentasSupermercado
             End If
             objrep.ExportToDisk(ExportFormatType.PortableDocFormat, gs_CarpetaRaiz + "\Facturas\" + CStr(_NumFac) + "_" + CStr(_Autorizacion) + ".pdf")
             L_Actualiza_Dosificacion(_numidosif, _NumFac, numi)
+        End If
+    End Sub
+    Public Sub P_prImprimirFacturaNueva(numi As String, impFactura As Boolean, grabarPDF As Boolean)
+        Dim _Fecha As Date
+        Dim _Ds, _Ds1, _Ds2, _Ds3 As New DataSet
+        Dim _Autorizacion, _Nit, _Total, _Hora,
+            _Literal, _TotalDecimal, _TotalDecimal2 As String
+        Dim I, _NumFac As Integer
+        Dim _TotalLi As Decimal
+        Dim _VistaPrevia As Integer = 0
+
+
+        _Ds = L_Reporte_FacturaNueva(numi, numi)
+
+        If _Ds.Tables.Count > 0 Then
+
+
+            _Fecha = _Ds.Tables(0).Rows(0).Item("fvafec")
+            _Hora = _Ds.Tables(0).Rows(0).Item("fvahora")
+            _Autorizacion = _Ds.Tables(0).Rows(0).Item("fvaautoriz")
+            _NumFac = _Ds.Tables(0).Rows(0).Item("fvanfac")
+
+
+            'Literal 
+            _TotalLi = _Ds.Tables(0).Rows(0).Item("fvasubtotal") - _Ds.Tables(0).Rows(0).Item("fvadesc")
+            _TotalDecimal = _TotalLi - Math.Truncate(_TotalLi)
+            _TotalDecimal2 = CDbl(_TotalDecimal) * 100
+
+            'Dim li As String = Facturacion.ConvertirLiteral.A_fnConvertirLiteral(CDbl(_Total) - CDbl(_TotalDecimal)) + " con " + IIf(_TotalDecimal2.Equals("0"), "00", _TotalDecimal2) + "/100 Bolivianos"
+            _Literal = Facturacion.ConvertirLiteral.A_fnConvertirLiteral(CDbl(_TotalLi) - CDbl(_TotalDecimal)) + "  " + IIf(_TotalDecimal2.Equals("0"), "00", _TotalDecimal2) + "/100 Bolivianos"
+
+            _Ds2 = L_Reporte_Factura_Cia("2")
+            QrFactura.Text = _Ds.Tables(0).Rows(0).Item("fvaQrUrl").ToString
+
+            If Not IsNothing(P_Global.Visualizador) Then
+                P_Global.Visualizador.Close()
+            End If
+
+            For I = 0 To _Ds.Tables(0).Rows.Count - 1
+                _Ds.Tables(0).Rows(I).Item("fvaimgqr") = P_fnImageToByteArray(QrFactura.Image)
+            Next
+            If (impFactura) Then
+                Dim objrep As Object = Nothing
+                Dim empresaId = ObtenerEmpresaHabilitada()
+                Dim empresaHabilitada As DataTable = ObtenerEmpresaTipoReporte(empresaId, Convert.ToInt32(ENReporte.FACTURA))
+                For Each fila As DataRow In empresaHabilitada.Rows
+                    Select Case fila.Item("TipoReporte").ToString
+                        Case ENReporteTipo.FACTURA_Ticket
+                            objrep = New R_Factura_7_5x1000
+                            SerPArametrosNuevo(_Ds, _Ds2, _Autorizacion, _Hora, _Literal, _NumFac, objrep,
+                                      fila.Item("TipoReporte").ToString, _Fecha, grabarPDF, numi)
+                            'Case ENReporteTipo.FACTURA_MediaCarta
+                            '    objrep = New R_FacturaMediaCarta
+                            '    SerPArametrosNuevo(_Ds, _Ds1, _Ds2, _Autorizacion, _Hora, _Literal, _NumFac, objrep,
+                            '                  fila.Item("TipoReporte").ToString, _Fecha, grabarPDF, numi)
+                            'Case ENReporteTipo.FACTURA_Carta
+                            '    objrep = New R_FacturaCarta
+                            '    SerPArametrosNuevo(_Ds, _Ds1, _Ds2, _Autorizacion, _Hora, _Literal, _NumFac, objrep,
+                            '                  fila.Item("TipoReporte").ToString, _Fecha, grabarPDF, numi)
+                    End Select
+                Next
+            End If
+
+        Else
+            ToastNotification.Show(Me, "No existe datos de Facturación".ToUpper,
+                                                 My.Resources.WARNING, 3500,
+                                                 eToastGlowColor.Blue, eToastPosition.TopCenter)
+
+        End If
+    End Sub
+    Private Sub SerPArametrosNuevo(_Ds As DataSet, _Ds2 As DataSet, ByRef _Autorizacion As String, ByRef _Hora As String, ByRef _Literal As String,
+                              ByRef _NumFac As Integer, objrep As Object, tipoReporte As String, _fecha As String, grabarPDF As Boolean, numi As String)
+        Select Case tipoReporte
+            Case ENReporteTipo.FACTURA_Ticket
+                objrep.SetDataSource(_Ds.Tables(0))
+                objrep.SetParameterValue("Hora", _Hora)
+                objrep.SetParameterValue("Direccionpr", _Ds2.Tables(0).Rows(0).Item("scdir").ToString)
+                objrep.SetParameterValue("Telefonopr", "Tel. " + _Ds2.Tables(0).Rows(0).Item("sctelf").ToString)
+                objrep.SetParameterValue("Literal1", _Literal)
+                objrep.SetParameterValue("Literal2", " ")
+                objrep.SetParameterValue("Literal3", " ")
+                objrep.SetParameterValue("NroFactura", _NumFac)
+                objrep.SetParameterValue("NroAutoriz", _Autorizacion)
+                objrep.SetParameterValue("ENombre", _Ds2.Tables(0).Rows(0).Item("scneg").ToString) '?
+                objrep.SetParameterValue("ECasaMatriz", _Ds2.Tables(0).Rows(0).Item("scsuc").ToString)
+                objrep.SetParameterValue("PuntoVenta", "PUNTO DE VENTA No. " + _Ds.Tables(0).Rows(0).Item("fvanrocaja").ToString)
+                objrep.SetParameterValue("ECiudadPais", _Ds2.Tables(0).Rows(0).Item("scpai").ToString)
+                'objrep.SetParameterValue("ESFC", "SFC " + _Ds1.Tables(0).Rows(0).Item("sbsfc").ToString)
+                objrep.SetParameterValue("ENit", _Ds2.Tables(0).Rows(0).Item("scnit").ToString)
+                objrep.SetParameterValue("EActividad", _Ds2.Tables(0).Rows(0).Item("scact").ToString)
+
+                objrep.SetParameterValue("ENota", "''" + "ESTA FACTURA CONTRIBUYE AL DESARROLLO DEL PAÍS, EL USO ILÍCITO SERÁ SANCIONADO DE ACUERDO A LEY." + "''")
+
+                'objrep.SetParameterValue("ELey", _Ds1.Tables(0).Rows(0).Item("sbnota2").ToString)
+                'objrep.SetParameterValue("FechaLim", _Ds1.Tables(0).Rows(0).Item("sbfal"))
+                objrep.SetParameterValue("Usuario", gs_user)
+
+        End Select
+        Dim _Ds3 As DataSet = L_ObtenerRutaImpresora("1") ' Datos de Impresion de Facturación
+        If (_Ds3.Tables(0).Rows(0).Item("cbvp")) Then 'Vista Previa de la Ventana de Vizualización 1 = True 0 = False
+            P_Global.Visualizador = New Visualizador
+            P_Global.Visualizador.CrGeneral.ReportSource = objrep
+            P_Global.Visualizador.ShowDialog()
+            P_Global.Visualizador.BringToFront()
+        Else
+            Dim pd As New PrintDocument()
+            Dim instance As New Printing.PrinterSettings
+            Dim impresosaPredt As String = instance.PrinterName
+            pd.PrinterSettings.PrinterName = impresosaPredt
+
+            If (Not pd.PrinterSettings.IsValid) Then
+                ToastNotification.Show(Me, "La Impresora ".ToUpper + impresosaPredt + Chr(13) + "No Existe".ToUpper,
+                                       My.Resources.WARNING, 5000,
+                                       eToastGlowColor.Blue, eToastPosition.BottomRight)
+            Else
+                objrep.PrintOptions.PrinterName = _Ds3.Tables(0).Rows(0).Item("cbrut").ToString '"EPSON TM-T20II Receipt5 (1)"
+                objrep.PrintToPrinter(1, True, 0, 0)
+                'crystalReportDocument.PrintOptions.PrinterName = "your printer name"
+                'objrep.PrintTicket("EPSON TM-T20II Receipt")
+            End If
+        End If
+        If (grabarPDF) Then
+            'Copia de Factura en PDF
+            If (Not Directory.Exists(gs_CarpetaRaiz + "\Facturas")) Then
+                Directory.CreateDirectory(gs_CarpetaRaiz + "\Facturas")
+            End If
+            objrep.ExportToDisk(ExportFormatType.PortableDocFormat, gs_CarpetaRaiz + "\Facturas\" + CStr(_NumFac) + "_" + CStr(_Autorizacion) + ".pdf")
+
         End If
     End Sub
     Private Function ObtenerFechaLiteral(Fecliteral As String, ciudad As String) As String
@@ -2371,6 +2529,10 @@ Public Class F0_VentasSupermercado
         _IniciarTodo()
         _Limpiar()
         tbProducto.Focus()
+
+
+        tokenObtenido = ObtToken()
+        CodTipoDocumento(tokenObtenido)
     End Sub
 
     Private Sub tbProducto_KeyDown(sender As Object, e As KeyEventArgs) Handles tbProducto.KeyDown
@@ -2646,6 +2808,8 @@ Public Class F0_VentasSupermercado
                     CType(grdetalle.DataSource, DataTable).Rows(pos).Item("tbpbas") = fila(0).ItemArray(18)
                     CType(grdetalle.DataSource, DataTable).Rows(pos).Item("tbptot") = fila(0).ItemArray(18)
                     CType(grdetalle.DataSource, DataTable).Rows(pos).Item("tbtotdesc") = fila(0).ItemArray(18)
+                    CType(grdetalle.DataSource, DataTable).Rows(pos).Item("ygcodsin") = fila(0).ItemArray(24)
+                    CType(grdetalle.DataSource, DataTable).Rows(pos).Item("ygcodu") = fila(0).ItemArray(25)
                     CType(grdetalle.DataSource, DataTable).Rows(pos).Item("tbcmin") = 1
                     If (gb_FacturaIncluirICE) Then
                         CType(grdetalle.DataSource, DataTable).Rows(pos).Item("tbpcos") = fila(0).ItemArray(19)
@@ -2693,7 +2857,7 @@ Public Class F0_VentasSupermercado
                     End If
                     _fnObtenerFilaDetalle(pos, grdetalle.GetValue("tbnumi"))
                 End If
-                Dim cantidad = Format(total / CDbl(fila(0).ItemArray(18)), "0.000")
+                Dim cantidad = Format(total / CDbl(fila(0).ItemArray(18)), "0.00")
                 Dim precio = fila(0).ItemArray(18)
                 total = cantidad * precio
                 CType(grdetalle.DataSource, DataTable).Rows(pos).Item("tbty5prod") = fila(0).ItemArray(0)
@@ -2706,6 +2870,8 @@ Public Class F0_VentasSupermercado
                 CType(grdetalle.DataSource, DataTable).Rows(pos).Item("tbpbas") = precio
                 CType(grdetalle.DataSource, DataTable).Rows(pos).Item("tbptot") = total
                 CType(grdetalle.DataSource, DataTable).Rows(pos).Item("tbtotdesc") = total
+                CType(grdetalle.DataSource, DataTable).Rows(pos).Item("ygcodsin") = fila(0).Item("ygcodsin")
+                CType(grdetalle.DataSource, DataTable).Rows(pos).Item("ygcodu") = fila(0).Item("ygcodu")
                 CType(grdetalle.DataSource, DataTable).Rows(pos).Item("tbcmin") = cantidad
                 If (gb_FacturaIncluirICE) Then
                     CType(grdetalle.DataSource, DataTable).Rows(pos).Item("tbpcos") = fila(0).ItemArray(19)
@@ -2839,6 +3005,8 @@ Public Class F0_VentasSupermercado
                             CType(grdetalle.DataSource, DataTable).Rows(pos).Item("tbpbas") = FilaSelectLote.Item("yhprecio")
                             CType(grdetalle.DataSource, DataTable).Rows(pos).Item("tbptot") = FilaSelectLote.Item("yhprecio")
                             CType(grdetalle.DataSource, DataTable).Rows(pos).Item("tbtotdesc") = FilaSelectLote.Item("yhprecio")
+                            CType(grdetalle.DataSource, DataTable).Rows(pos).Item("ygcodsin") = FilaSelectLote.Item("ygcodsin")
+                            CType(grdetalle.DataSource, DataTable).Rows(pos).Item("ygcodu") = FilaSelectLote.Item("ygcodu")
                             CType(grdetalle.DataSource, DataTable).Rows(pos).Item("tbcmin") = 1
                             'If (gb_FacturaIncluirICE) Then
                             CType(grdetalle.DataSource, DataTable).Rows(pos).Item("tbpcos") = FilaSelectLote.Item("pcos")
@@ -3025,9 +3193,9 @@ Public Class F0_VentasSupermercado
                     'CType(grdetalle.DataSource, DataTable).Rows(pos).Item("tbptot2") = grdetalle.GetValue("tbpcos") * Cantidad
 
                     CType(grdetalle.DataSource, DataTable).Rows(pos).Item("tbcmin") = Cantidad
-                    CType(grdetalle.DataSource, DataTable).Rows(pos).Item("tbptot") = fila(0).Item("tbpbas") * Cantidad
-                    CType(grdetalle.DataSource, DataTable).Rows(pos).Item("tbtotdesc") = fila(0).Item("tbpbas") * Cantidad
-                    CType(grdetalle.DataSource, DataTable).Rows(pos).Item("tbptot2") = fila(0).Item("tbpcos") * Cantidad
+                    CType(grdetalle.DataSource, DataTable).Rows(pos).Item("tbptot") = Format((fila(0).Item("tbpbas") * Cantidad), "#.#0")
+                    CType(grdetalle.DataSource, DataTable).Rows(pos).Item("tbtotdesc") = Format((fila(0).Item("tbpbas") * Cantidad), "#.#0")
+                    CType(grdetalle.DataSource, DataTable).Rows(pos).Item("tbptot2") = Format((fila(0).Item("tbpcos") * Cantidad), "#.#0")
 
 
                     'CalcularDescuentos(grdetalle.GetValue("tbty5prod"), Cantidad, grdetalle.GetValue("tbpbas"), pos)
@@ -3479,7 +3647,7 @@ Public Class F0_VentasSupermercado
         Dim NTarjeta As String
 
         If TbEmailS.Text = String.Empty Then
-            email = "cliente@crex.com.bo"
+            email = "economarket.oruro@gmail.com"
             TbEmailS.Text = email
         Else
             email = TbEmailS.Text
@@ -3498,13 +3666,13 @@ Public Class F0_VentasSupermercado
         End If
 
 
-        'Dim dtmax = L_fnObtenerMaxFact(gs_NroCaja, Convert.ToInt32(Now.Date.Year))
-        'If dtmax.Rows.Count = 0 Then
-        '    NumFactura = 1
-        'Else
-        '    Dim maxNFac As Integer = dtmax.Rows(0).Item("fvanfac")
-        '    NumFactura = maxNFac + 1
-        'End If
+        Dim dtmax = L_fnObtenerMaxFact(gs_NroCaja, Convert.ToInt32(Now.Date.Year))
+        If dtmax.Rows.Count = 0 Then
+            NumFactura = 1
+        Else
+            Dim maxNFac As Integer = dtmax.Rows(0).Item("fvanfac")
+            NumFactura = maxNFac + 1
+        End If
 
         Emenvio.numeroFactura = NumFactura
         Emenvio.nombreRazonSocial = lbCliente.Text.ToString()

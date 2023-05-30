@@ -1593,10 +1593,13 @@ Public Class AccesoLogica
     End Function
 
 
-    Public Shared Function L_fnGrabarVenta(ByRef _tanumi As String, _taidCorelativo As String, _tafdoc As String, _taven As Integer, _tatven As Integer, _tafvcr As String,
-                                           _taclpr As Integer, _tamon As Integer, _taobs As String, _tadesc As Double, _taice As Double,
-                                           _tatotal As Double, detalle As DataTable, _almacen As Integer, _taprforma As Integer, Monto As DataTable, _NroCaja As Integer,
-                                           _programa As String, detalleReplica As DataTable) As Boolean
+    Public Shared Function L_fnGrabarVenta(ByRef _tanumi As String, _taidCorelativo As String, _tafdoc As String,
+                                           _taven As Integer, _tatven As Integer, _tafvcr As String, _taclpr As Integer,
+                                           _tamon As Integer, _taobs As String, _tadesc As Double, _taice As Double,
+                                           _tatotal As Double, detalle As DataTable, _almacen As Integer, _taprforma As Integer,
+                                           Monto As DataTable, _NroCaja As Integer, _programa As String, detalleReplica As DataTable,
+                                           _Nit As String, _Rsocial As String, _Correo As String, _TipoDoc As String,
+                                           _actualizar As Integer) As Boolean
         Dim _Tabla As DataTable
         Dim _resultado As Boolean
         Dim _listParam As New List(Of Datos.DParametro)
@@ -1621,6 +1624,12 @@ Public Class AccesoLogica
         _listParam.Add(New Datos.DParametro("@taNrocaja", _NroCaja))
         _listParam.Add(New Datos.DParametro("@bcprograma", _programa))
         _listParam.Add(New Datos.DParametro("@tauact", L_Usuario))
+        _listParam.Add(New Datos.DParametro("@Nit", _Nit))
+        _listParam.Add(New Datos.DParametro("@correo", _Correo))
+        _listParam.Add(New Datos.DParametro("@tipoDoc", _TipoDoc))
+        _listParam.Add(New Datos.DParametro("@Rsocial", _Rsocial))
+        _listParam.Add(New Datos.DParametro("@actualizar", _actualizar))
+
         _listParam.Add(New Datos.DParametro("@TV0011", "", detalle))
         _listParam.Add(New Datos.DParametro("@TV0011a", "", detalleReplica))
         _listParam.Add(New Datos.DParametro("@TV0014", "", Monto))
@@ -1847,7 +1856,15 @@ Public Class AccesoLogica
         End If
         Return _resultado
     End Function
-
+    Public Shared Function L_fnMostrarMontos2(tanumi As Integer) As DataTable
+        Dim _Tabla As DataTable
+        Dim _listParam As New List(Of Datos.DParametro)
+        _listParam.Add(New Datos.DParametro("@tipo", 23))
+        _listParam.Add(New Datos.DParametro("@tanumi", tanumi))
+        _listParam.Add(New Datos.DParametro("@tauact", L_Usuario))
+        _Tabla = D_ProcedimientoConParam("sp_Mam_TV001", _listParam)
+        Return _Tabla
+    End Function
     Public Shared Function L_prBitacora(_numi As String) As DataTable
         Dim _Tabla As DataTable
 
@@ -2597,16 +2614,18 @@ Public Class AccesoLogica
                                        _NitCli As String, _CodCli As String, _DesCli1 As String, _DesCli2 As String,
                                        _A As String, _B As String, _C As String, _D As String, _E As String, _F As String,
                                        _G As String, _H As String, _CodCon As String, _FecLim As String,
-                                       _Imgqr As String, _Alm As String, _Numi2 As String, _hora As String)
+                                       _Imgqr As String, _Alm As String, _Numi2 As String, _hora As String, _qrurl As String,
+                                       _facturl As String, _2leyenda As String, _3leyenda As String, _cufd As String,
+                                       _nrocaja As String, _anhio As String)
         Dim Sql As String
         Try
             Sql = "" + _Numi + ", " _
                 + "'" + _Fecha + "', " _
                 + "" + _Nfac + ", " _
-                + "" + _NAutoriz + ", " _
+                + "'" + _NAutoriz + "', " _
                 + "" + _Est + ", " _
                 + "'" + _NitCli + "', " _
-                + "" + _CodCli + ", " _
+                + "'" + _CodCli + "', " _
                 + "'" + _DesCli1 + "', " _
                 + "'" + _DesCli2 + "', " _
                 + "" + _A + ", " _
@@ -2622,7 +2641,15 @@ Public Class AccesoLogica
                 + "" + _Imgqr + ", " _
                 + "" + _Alm + ", " _
                 + "" + _Numi2 + ", " _
-                + "'" + _hora + "'"
+                + "'" + _hora + "', " _
+                + "'" + _qrurl + "', " _
+                + "'" + _facturl + "', " _
+                + "'" + _2leyenda + "', " _
+                + "'" + _3leyenda + "', " _
+                + "'" + _cufd + "', " _
+                + "" + _nrocaja + ", " _
+                + "" + _anhio + ""
+
             D_Insertar_Datos("TFV001", Sql)
         Catch ex As Exception
             MsgBox(ex.Message)
@@ -2720,7 +2747,16 @@ Public Class AccesoLogica
         _Ds.Tables.Add(_Tabla)
         Return _Ds
     End Function
+    Public Shared Function L_Reporte_FacturaNueva(_Numi As String, _Numi2 As String) As DataSet
+        Dim _Tabla As DataTable
+        Dim _Ds As New DataSet
+        Dim _Where As String
+        _Where = " fvanumi = " + _Numi + " and fvanumi = " + _Numi2 + "  Order by tbnumi"
 
+        _Tabla = D_Datos_Tabla("*", "VR_GO_Factura2", _Where)
+        _Ds.Tables.Add(_Tabla)
+        Return _Ds
+    End Function
     ''VR_MAM_FacturaServicio
     Public Shared Function L_Reporte_FacturaServicio(_Numi As String, _Numi2 As String) As DataSet
         Dim _Tabla As DataTable
@@ -2775,21 +2811,24 @@ Public Class AccesoLogica
         Return _Tabla
     End Function
 
-    Public Shared Sub L_Grabar_Nit(_Nit As String, _Nom1 As String, _Nom2 As String)
+    Public Shared Sub L_Grabar_Nit(_Nit As String, _Nom1 As String, _Nom2 As String, _TipoDoc As String,
+                                   _Correo As String)
         Dim _Err As Boolean
-        Dim _Nom01, _Nom02 As String
+        Dim _Nom01, _Nom02, Correo, TipoDoc As String
         Dim Sql As String
         _Nom01 = ""
         _Nom02 = ""
-        L_Validar_Nit(_Nit, _Nom01, _Nom02)
+        Correo = ""
+        TipoDoc = ""
+        L_Validar_Nit(_Nit, _Nom01, _Nom02, Correo, TipoDoc, "")
 
         If _Nom01 = "" Then
-            Sql = "'" + _Nit + "', '" + _Nom1 + "', '" + _Nom2 + "'"
+            Sql = "'" + _Nit + "', '" + _Nom1 + "', '" + _Nom2 + "', '" + _TipoDoc + "','" + _Correo + "'"
             _Err = D_Insertar_Datos("TS001", Sql)
         Else
-            If (_Nom1 <> _Nom01) Or (_Nom2 <> _Nom02) Then
-                Sql = "sanom1 = '" + _Nom1 + "' " +
-                      IIf(_Nom02.ToString.Trim.Equals(""), "", ", sanom2 = '" + _Nom2 + "', ")
+            If (_Nom1 <> _Nom01 Or _Correo <> Correo Or _TipoDoc <> TipoDoc) Then
+                Sql = "sanom1 = '" + _Nom1 + "' " + " , satipdoc = '" + _TipoDoc + "' " + " , sacorreo = '" + _Correo + "' " +
+                       ", sanom2 = '" + _Nom2 + "' "
                 _Err = D_Modificar_Datos("TS001", Sql, "sanit = '" + _Nit + "'")
             End If
         End If
@@ -6282,21 +6321,32 @@ Public Class AccesoLogica
         _Tabla = D_ProcedimientoConParam("sp_Mam_TV001", _listParam)
         Return _Tabla
     End Function
-    Public Shared Function ObtenerProveedorIDXProducto(productoId As Integer) As Integer
+    'Public Shared Function ObtenerProveedorIDXProducto(productoId As Integer) As Integer
+    '    Dim _Tabla As DataTable
+    '    Dim _resultado As Integer
+    '    Dim _listParam As New List(Of Datos.DParametro)
+    '    _listParam.Add(New Datos.DParametro("@tipo", 22))
+    '    _listParam.Add(New Datos.DParametro("@producto", productoId))
+    '    _Tabla = D_ProcedimientoConParam("sp_Mam_TV001", _listParam)
+
+    '    If _Tabla.Rows.Count > 0 Then
+    '        _resultado = _Tabla.Rows(0).Item("ProveedorId")
+    '    Else
+    '        _resultado = 0
+    '    End If
+    '    Return _resultado
+
+    'End Function
+
+    Public Shared Function L_fnObtenerMaxFact(_nrocaja As Integer, _anhio As Integer) As DataTable
         Dim _Tabla As DataTable
-        Dim _resultado As Integer
         Dim _listParam As New List(Of Datos.DParametro)
         _listParam.Add(New Datos.DParametro("@tipo", 22))
-        _listParam.Add(New Datos.DParametro("@producto", productoId))
+        _listParam.Add(New Datos.DParametro("@taNrocaja", _nrocaja))
+        _listParam.Add(New Datos.DParametro("@anhio", _anhio))
+        _listParam.Add(New Datos.DParametro("@tauact", L_Usuario))
         _Tabla = D_ProcedimientoConParam("sp_Mam_TV001", _listParam)
-
-        If _Tabla.Rows.Count > 0 Then
-            _resultado = _Tabla.Rows(0).Item("ProveedorId")
-        Else
-            _resultado = 0
-        End If
-        Return _resultado
-
+        Return _Tabla
     End Function
 #End Region
 End Class

@@ -1709,9 +1709,10 @@ Public Class F0_Venta2
                 dtDetalle = CType(grdetalle.DataSource, DataTable)
             End If
 
-            Dim res As Boolean = L_fnGrabarVenta(numi, "", tbFechaVenta.Value.ToString("yyyy/MM/dd"), _CodEmpleado, IIf(swTipoVenta.Value = True, 1, 0), IIf(swTipoVenta.Value = True,
-                                                Now.Date.ToString("yyyy/MM/dd"), tbFechaVenc.Value.ToString("yyyy/MM/dd")), _CodCliente, IIf(swMoneda.Value = True, 1, 0),
-                                                  tbObservacion.Text, tbMdesc.Value, tbIce.Value, tbTotalBs.Text, dtDetalle, cbSucursal.Value, 0, tabla, gs_NroCaja, Programa, dtDetalleReplica)
+            'Dim res As Boolean = L_fnGrabarVenta(numi, "", tbFechaVenta.Value.ToString("yyyy/MM/dd"), _CodEmpleado, IIf(swTipoVenta.Value = True, 1, 0), IIf(swTipoVenta.Value = True,
+            '                                    Now.Date.ToString("yyyy/MM/dd"), tbFechaVenc.Value.ToString("yyyy/MM/dd")), _CodCliente, IIf(swMoneda.Value = True, 1, 0),
+            '                                      tbObservacion.Text, tbMdesc.Value, tbIce.Value, tbTotalBs.Text, dtDetalle, cbSucursal.Value, 0, tabla, gs_NroCaja, Programa, dtDetalleReplica)
+            Dim res As Boolean
             If res Then
                 'res = P_fnGrabarFacturarTFV001(numi)
                 'Emite factura
@@ -1905,9 +1906,10 @@ Public Class F0_Venta2
             End If
 
             If (Not tbNit.Text.Trim.Equals("0")) Then
-                L_Grabar_Nit(tbNit.Text.Trim, TbNombre1.Text.Trim, TbNombre2.Text.Trim)
+                'L_Grabar_Nit(tbNit.Text.Trim, TbNombre1.Text.Trim, Convert.ToString(_CodCliente), CbTipoDoc.Value, TbEmail.Text)
+                L_Grabar_Nit(tbNit.Text.Trim, TbNombre1.Text.Trim, Convert.ToString(_CodCliente), "", "")
             Else
-                L_Grabar_Nit(tbNit.Text, "S/N", "")
+                L_Grabar_Nit(tbNit.Text, "S/N", "", "", "")
             End If
         End If
 
@@ -1928,29 +1930,29 @@ Public Class F0_Venta2
         Dim res As Boolean = False
         Dim _Hora As String = Now.Hour.ToString("D2") + ":" + Now.Minute.ToString("D2")
         'Grabado de Cabesera Factura
-        L_Grabar_Factura(numi,
-                        dtiFechaFactura.Value.ToString("yyyy/MM/dd"),
-                        IIf(Val(tbNroFactura.Text) = 0, "0", tbNroFactura.Text),
-                        IIf(Val(tbNroAutoriz.Text) = 0, "0", tbNroAutoriz.Text),
-                        "1",
-                        tbNit.Text.Trim,
-                        _CodCliente,
-                        TbNombre1.Text,
-                        "",
-                        CStr(Format(a, "####0.00")),
-                        CStr(Format(b, "####0.00")),
-                        CStr(Format(c, "####0.00")),
-                        CStr(Format(d, "####0.00")),
-                        CStr(Format(e, "####0.00")),
-                        CStr(Format(f, "####0.00")),
-                        CStr(Format(g, "####0.00")),
-                        CStr(Format(h, "####0.00")),
-                        "",
-                        Now.Date.ToString("yyyy/MM/dd"),
-                        "''",
-                        cbSucursal.Value,
-                        numi,
-                       _Hora)
+        'L_Grabar_Factura(numi,
+        '                dtiFechaFactura.Value.ToString("yyyy/MM/dd"),
+        '                IIf(Val(tbNroFactura.Text) = 0, "0", tbNroFactura.Text),
+        '                IIf(Val(tbNroAutoriz.Text) = 0, "0", tbNroAutoriz.Text),
+        '                "1",
+        '                tbNit.Text.Trim,
+        '                _CodCliente,
+        '                TbNombre1.Text,
+        '                "",
+        '                CStr(Format(a, "####0.00")),
+        '                CStr(Format(b, "####0.00")),
+        '                CStr(Format(c, "####0.00")),
+        '                CStr(Format(d, "####0.00")),
+        '                CStr(Format(e, "####0.00")),
+        '                CStr(Format(f, "####0.00")),
+        '                CStr(Format(g, "####0.00")),
+        '                CStr(Format(h, "####0.00")),
+        '                "",
+        '                Now.Date.ToString("yyyy/MM/dd"),
+        '                "''",
+        '                cbSucursal.Value,
+        '                numi,
+        '               _Hora)
 
         'Grabar Nuevo y Modificado en la BDDiconDinoEco en la tabla TPA001
         If (tbCodigo.Text = String.Empty) Then
@@ -3882,7 +3884,8 @@ salirIf:
             nom1 = ""
             nom2 = ""
             If (tbNit.Text.Trim <> String.Empty) Then
-                L_Validar_Nit(tbNit.Text.Trim, nom1, nom2)
+                'L_Validar_Nit(tbNit.Text.Trim, nom1, nom2, correo, tipoDoc, "")
+                L_Validar_Nit(tbNit.Text.Trim, nom1, nom2, "", "", "")
                 If nom1 = "" Then
                     TbNombre1.Focus()
                 Else
