@@ -3900,28 +3900,33 @@ salirIf:
         Try
             If (Not _fnAccesible()) Then
 
-                If (gb_FacturaEmite) Then
-                    If tbCodigo.Text = String.Empty Then
-                        Throw New Exception("Venta no encontrada")
-                    End If
-                    If tbNit.Text = String.Empty Then
-                        _prImiprimirNotaVenta(tbCodigo.Text)
-                        Return
-                    ElseIf (Not P_fnValidarFacturaVigente()) Then
+                F0_VentasSupermercado.P_prImprimirFacturaNueva(tbCodigo.Text, True, False)
 
-                        Dim img As Bitmap = New Bitmap(My.Resources.WARNING, 50, 50)
+                _prImiprimirNotaVenta(tbCodigo.Text)
 
-                        ToastNotification.Show(Me, "No se puede imprimir la factura con numero ".ToUpper + tbNroFactura.Text + ", su factura esta anulada".ToUpper,
-                                              img, 3000,
-                                              eToastGlowColor.Green,
-                                              eToastPosition.TopCenter)
-                        Exit Sub
-                    End If
-                    ReimprimirFactura(tbCodigo.Text, True, True)
-                    _prImiprimirNotaVenta(tbCodigo.Text)
-                Else
-                    _prImiprimirNotaVenta(tbCodigo.Text)
-                End If
+
+                'If (gb_FacturaEmite) Then
+                '    If tbCodigo.Text = String.Empty Then
+                '        Throw New Exception("Venta no encontrada")
+                '    End If
+                '    If tbNit.Text = String.Empty Then
+                '        _prImiprimirNotaVenta(tbCodigo.Text)
+                '        Return
+                '    ElseIf (Not P_fnValidarFacturaVigente()) Then
+
+                '        Dim img As Bitmap = New Bitmap(My.Resources.WARNING, 50, 50)
+
+                '        ToastNotification.Show(Me, "No se puede imprimir la factura con numero ".ToUpper + tbNroFactura.Text + ", su factura esta anulada".ToUpper,
+                '                              img, 3000,
+                '                              eToastGlowColor.Green,
+                '                              eToastPosition.TopCenter)
+                '        Exit Sub
+                '    End If
+                '    ReimprimirFactura(tbCodigo.Text, True, True)
+                '    _prImiprimirNotaVenta(tbCodigo.Text)
+                'Else
+                '    _prImiprimirNotaVenta(tbCodigo.Text)
+                'End If
             End If
         Catch ex As Exception
             MostrarMensajeError(ex.Message)

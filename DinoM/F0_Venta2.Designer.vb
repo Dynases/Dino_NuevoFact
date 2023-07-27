@@ -259,6 +259,7 @@ Partial Class F0_Venta2
         '
         'btnNuevo
         '
+        Me.btnNuevo.Visible = False
         '
         'PanelToolBar2
         '

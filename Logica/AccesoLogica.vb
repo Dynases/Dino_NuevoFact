@@ -2834,7 +2834,20 @@ Public Class AccesoLogica
         End If
 
     End Sub
+    Public Shared Function L_Grabar_NitPrimero(_Nit As String, _Nom1 As String, _Nom2 As String, _TipoDoc As String, _Correo As String) As Boolean
+        Dim _Err As Boolean
+        Dim resultado As Boolean
+        Dim Sql As String
 
+        Sql = "'" + _Nit + "', '" + _Nom1 + "', '" + _Nom2 + "', '" + _TipoDoc + "','" + _Correo + "'"
+        _Err = D_Insertar_Datos("TS001", Sql)
+        If _Err = False Then
+            resultado = True
+        Else
+            resultado = False
+        End If
+        Return resultado
+    End Function
     Public Shared Sub L_Validar_Nit(_Nit As String, ByRef _Nom1 As String, ByRef _Nom2 As String,
                                     ByRef _Correo As String, ByRef _TipoDoc As String, ByRef _Id As String)
         Dim _Tabla As DataTable

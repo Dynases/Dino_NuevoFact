@@ -453,7 +453,7 @@ Public Class F0_VentasSupermercado
             .Width = 70
             .CellStyle.TextAlignment = Janus.Windows.GridEX.TextAlignment.Far
             .Visible = True
-            .FormatString = "0.000"
+            .FormatString = "0.00"
             .Caption = "Cantidad"
         End With
         With grdetalle.RootTable.Columns("tbumin")
@@ -3548,7 +3548,8 @@ Public Class F0_VentasSupermercado
         Dim result = JsonConvert.DeserializeObject(Of SiatConn)(response)
 
         Dim Codigoconn As String
-        Codigoconn = result.meta.code
+        'Codigoconn = result.meta.code
+        Codigoconn = result.data
         'Dim json = JsonConvert.SerializeObject(result)
         'MsgBox(json)
         Return Codigoconn
@@ -3647,7 +3648,7 @@ Public Class F0_VentasSupermercado
         Dim NTarjeta As String
 
         If TbEmailS.Text = String.Empty Then
-            email = "economarket.oruro@gmail.com"
+            email = "facturacion.sistema@gmail.com"
             TbEmailS.Text = email
         Else
             email = TbEmailS.Text

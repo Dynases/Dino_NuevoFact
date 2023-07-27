@@ -26,6 +26,7 @@ Public Class F1_MontoPagar
     Public email As String = ""
     Public IdNit As String = ""
     Public CExcep As Integer
+    Public NuevoCliente As Boolean = False
 
 
     Private Sub F1_MontoPagar_Load(sender As Object, e As EventArgs) Handles MyBase.Load
@@ -246,7 +247,9 @@ Public Class F1_MontoPagar
         If (tbNit.Text.Trim <> String.Empty) Then
             L_Validar_Nit(tbNit.Text.Trim, nom1, nom2, correo, tipoDoc, id)
             If nom1 = "" Then
-                tbRazonSocial.Focus()
+                CiNitNuevo()
+                'tbRazonSocial.Focus()
+                L_Validar_Nit(tbNit.Text.Trim, nom1, nom2, correo, tipoDoc, id)
                 IdNit = id
             Else
                 tbRazonSocial.Text = nom1
@@ -256,7 +259,35 @@ Public Class F1_MontoPagar
             End If
         End If
     End Sub
+    Private Sub CiNitNuevo()
+        Dim frm As New F_CiNitNuevo
+        Dim dt As DataTable
+        frm.tbNit.Text = tbNit.Text
 
+        With frm.CbTDoc
+            .DropDownList.Columns.Clear()
+            .DropDownList.Columns.Add("codigoClasificador").Width = 70
+            .DropDownList.Columns("codigoClasificador").Caption = "COD"
+            .DropDownList.Columns.Add("descripcion").Width = 500
+            .DropDownList.Columns("descripcion").Caption = "DESCRIPCION"
+            .ValueMember = "codigoClasificador"
+            .DisplayMember = "descripcion"
+            .DataSource = CbTipoDoc.DataSource
+            .Refresh()
+        End With
+        frm.CbTDoc.Value = CbTipoDoc.Value
+        frm.ShowDialog()
+
+
+        If (frm.Cliente = True) Then
+
+            tbRazonSocial.Text = frm.Razonsocial
+            TbEmail.Text = frm.Correo
+            CbTipoDoc.Value = frm.CbTDoc.Value
+            NuevoCliente = frm.NuevoCli
+
+        End If
+    End Sub
     Private Sub tbRazonSocial_KeyDown(sender As Object, e As KeyEventArgs) Handles tbRazonSocial.KeyDown
         If (e.KeyData = Keys.Up) Then
             tbNit.Focus()
@@ -321,7 +352,26 @@ Public Class F1_MontoPagar
                 CbTipoDoc.Focus()
                 Exit Sub
             End If
+            If NuevoCliente = False Then
+                Dim tokenSifac As String = F0_VentasSupermercado.ObtToken()
+                Dim code = F0_VentasSupermercado.VerifConexion(tokenSifac)
+                If (code = True) Then
+                    If (CbTipoDoc.Value = 5) Then ''El tipo de Doc. es Nit
+                        Dim Succes As Integer = F0_VentasSupermercado.VerificarNit(tokenSifac, tbNit.Text)
+                        If Succes <> 200 Then
+                            'If F0_VentasSupermercado.CodExcepcion = 1 Then
+                            '    'Prosigue normal con el grabado
+                            '    CExcep = F0_VentasSupermercado.CodExcepcion
+                            'Else
+                            '    CExcep = F0_VentasSupermercado.CodExcepcion
+                            '    Exit Sub
+                            'End If
+                            Exit Sub
+                        End If
+                    End If
 
+                End If
+            End If
             If (chbTarjeta.Checked = True) Then
 
                 If tbNroTarjeta1.Text = String.Empty Or tbNroTarjeta1.Text = "0" Or tbNroTarjeta1.Text = "0000" Or tbNroTarjeta3.Text = String.Empty Or tbNroTarjeta3.Text = "0" Or tbNroTarjeta3.Text = "0000" Then
@@ -396,14 +446,24 @@ Public Class F1_MontoPagar
             tbMontoQR.Enabled = False
             chbQR.Enabled = False
             tbMontoTarej.IsInputReadOnly = True
+            lbNroTarjeta.Visible = True
+            tbNroTarjeta1.Visible = True
+            tbNroTarjeta2.Visible = True
+            tbNroTarjeta3.Visible = True
+            lbEjemplo.Visible = True
+
             tbMontoTarej.Focus()
         Else
             tbMontoBs.Enabled = True
             tbMontoDolar.Enabled = True
+            tbMontoTarej.Value = 0
             tbMontoQR.Enabled = True
             chbQR.Enabled = True
-            tbMontoTarej.Value = 0
-
+            lbNroTarjeta.Visible = False
+            tbNroTarjeta1.Visible = False
+            tbNroTarjeta2.Visible = False
+            tbNroTarjeta3.Visible = False
+            lbEjemplo.Visible = False
         End If
     End Sub
 
